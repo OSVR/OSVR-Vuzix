@@ -36,9 +36,3 @@ osvr_add_plugin(com_osvr_Vuzix
 target_link_libraries(com_osvr_Vuzix
     osvr::osvrPluginKitCpp
     Vuzix::iWearDriver)
-
-# If you use other libraries, find them and add a line like:
-# target_link_libraries(com_osvr_example_selfcontainedDetectAndCreate AnyOtherLibraries)
-
-# If you access the C++ API that's not really designed for plugin consumption, you'll need this line:
-# target_link_libraries(com_osvr_example_selfcontainedDetectAndCreate osvr::osvrPluginHost)    Vuzix::iWearDriver)
