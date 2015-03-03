@@ -1,1 +1,1 @@
-# OSVR-Vuix 
+# OSVR-Vuzix 
