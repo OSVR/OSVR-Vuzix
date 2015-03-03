@@ -79,7 +79,7 @@ if(WIN32)
     endif()
 
     # Get desired program files directory
-    set(_PF86 "ProgramFiles(x86)")
+    set(_PF86 "Program Files(x86)")
     if(NOT "$ENV{${_PF86}}" STREQUAL "")
     # 32-bit dir: only set on win64
         file(TO_CMAKE_PATH "$ENV{_PF86}" _progfiles)
