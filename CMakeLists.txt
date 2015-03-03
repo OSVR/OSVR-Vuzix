@@ -32,18 +32,13 @@ osvr_add_plugin(com_osvr_Vuzix
     com_osvr_Vuzix.cpp
     "${CMAKE_CURRENT_BINARY_DIR}/com_osvr_Vuzix_json.h")
 
-target_include_directories(com_osvr_Vuzix
-    PUBLIC
-    ${VUZIX_INCLUDE_DIRS})
-    
 # This example uses the C++ wrapper, as suggested, so you'll need this line.
-target_link_libraries(com_osvr_Vuzix 
+target_link_libraries(com_osvr_Vuzix
     osvr::osvrPluginKitCpp
-    ${VUZIX_LIBRARIES}
-    )
+    Vuzix::iWearDriver)
 
 # If you use other libraries, find them and add a line like:
 # target_link_libraries(com_osvr_example_selfcontainedDetectAndCreate AnyOtherLibraries)
 
 # If you access the C++ API that's not really designed for plugin consumption, you'll need this line:
-# target_link_libraries(com_osvr_example_selfcontainedDetectAndCreate osvr::osvrPluginHost)
+# target_link_libraries(com_osvr_example_selfcontainedDetectAndCreate osvr::osvrPluginHost)    Vuzix::iWearDriver)
