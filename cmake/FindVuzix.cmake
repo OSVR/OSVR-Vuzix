@@ -27,7 +27,7 @@ set(VUZIX_ROOT_DIR
 
 # Test 32/64 bits
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-	set(VUZIX_LIBRARY_PATH_SUFFIX "x64")
+	set(VUZIX_LIBRARY_PATH_SUFFIX "lib/x64")
 else()
 	set(VUZIX_LIBRARY_PATH_SUFFIX "lib")
 endif()
