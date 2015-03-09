@@ -16,17 +16,11 @@ Sensics, Inc.
 #include <iWearSDK.h>
 #include <iostream>
 
-class TrackerInstance
-{
+class TrackerInstance {
 public:
+  TrackerInstance() { status = IWRLoadDll(); }
 
-	TrackerInstance(){
-		status = IWRLoadDll();
-	}
+  ~TrackerInstance() { IWRFreeDll(); }
 
-	~TrackerInstance(){
-		IWRFreeDll();
-	}
-
-	long status;
+  long status;
 };
