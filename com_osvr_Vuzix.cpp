@@ -1,4 +1,3 @@
-#define IWEAR_ONETIME_DEFINITIONS
 /** @date 2015
 
     @author
@@ -13,21 +12,22 @@
 // (Final version intended to be licensed under
 // the Apache License, Version 2.0)
 
+//#define IWEAR_ONETIME_DEFINITIONS
+#define _USE_MATH_DEFINES
+
 // Internal Includes
 #include <osvr/PluginKit/PluginKit.h>
 #include <osvr/PluginKit/TrackerInterfaceC.h>
+#include <TrackerInstance.h>
 
 // Generated JSON header file
 #include "com_osvr_Vuzix_json.h"
 
 // Library/third-party includes
-#include <iWearSDK.h>
+#include <math.h>
 
 // Standard includes
 #include <iostream>
-
-#define PI					3.14159265358979f
-#define RAWTORAD            PI/32768.0f
 
 // Anonymous namespace to avoid symbol collision
 namespace {
@@ -51,82 +51,77 @@ class VuzixDevice {
     }
 
     OSVR_ReturnCode update() {
-       
-        iwr_status = IWRGetTracking(&yaw, &pitch, &roll);
+
+		long yaw, pitch, roll;
+        long iwr_status = IWRGetTracking(&yaw, &pitch, &roll);
         
         if (iwr_status != IWR_OK){
             std::cout << "PLUGIN: Vuzix tracker NOT connected, try again" << std::endl;
-            IWROpenTracker();
+			return OSVR_RETURN_FAILURE;
         }
         
-        const OSVR_OrientationState trackerCoords = convYawPitchRollToQuat(yaw, pitch, roll);
+        OSVR_OrientationState trackerCoords = convYawPitchRollToQuat(yaw, pitch, roll);
         
         osvrDeviceTrackerSendOrientation(m_dev, m_tracker, &trackerCoords, 0);
         return OSVR_RETURN_SUCCESS;
     }
 
+	static OSVR_OrientationState convYawPitchRollToQuat(long yaw, long pitch, long roll){
+
+		const float rawToRad = M_PI / 32768.0f;
+
+		//convert raw values to radians
+		double yawRad = yaw * rawToRad;
+		double pitchRad = pitch * rawToRad;
+		double rollRad = roll * rawToRad;
+
+		double c1 = cos(yawRad / 2.0);
+		double s1 = sin(yawRad / 2.0);
+
+		double c2 = cos(pitchRad / 2.0);
+		double s2 = sin(pitchRad / 2.0);
+
+		double c3 = cos(rollRad / 2.0);
+		double s3 = sin(rollRad / 2.0);
+
+		double c1c2 = c1*c2;
+		double s1s2 = s1*s2;
+
+		double w = c1c2*c3 - s1s2*s3;
+		double x = c1c2*s3 + s1s2*c3;
+		double y = s1*c2*c3 + c1*s2*s3;
+		double z = c1*s2*c3 - s1*c2*s3;
+
+		OSVR_OrientationState trackerCoords = { w, z, y, x };
+
+		return trackerCoords;
+	}
+
   private:
     osvr::pluginkit::DeviceToken m_dev;
     OSVR_TrackerDeviceInterface m_tracker;
-    double m_myVal;
-    long yaw, pitch, roll;
-    long iwr_status;
-
-    const OSVR_OrientationState convYawPitchRollToQuat(long yaw, long pitch, long roll){
-
-        double yawRad, pitchRad, rollRad;
-        //vars for conversion to Quat
-        double c1, s1, c2, s2, c3, s3, c1c2, s1s2, w, x, y, z;
-        //convert raw values to radians
-        yawRad = yaw * RAWTORAD;
-        pitchRad = pitch * RAWTORAD;
-        rollRad = roll * RAWTORAD;
-        
-        c1 = cos(yawRad / 2.0);
-        s1 = sin(yawRad / 2.0);
-
-        c2 = cos(pitchRad / 2.0);
-        s2 = sin(pitchRad / 2.0);
-
-        c3 = cos(rollRad / 2.0);
-        s3 = sin(rollRad / 2.0);
-
-        c1c2 = c1*c2;
-        s1s2 = s1*s2;
-        
-        w = c1c2*c3  - s1s2*s3;
-        x = c1c2*s3  + s1s2*c3;        
-        y = s1*c2*c3 + c1*s2*s3;
-        z = c1*s2*c3 - s1*c2*s3;
-
-       // std::cout << "Quat values: w: " << w << ", x: " << x << ", y: " << y << ", z: " << z << std::endl;
-
-        const OSVR_OrientationState trackerCoords = { w, z, y, x };
-        
-        return trackerCoords;
-    }
 };
 
 class HardwareDetection {
   public:
-    HardwareDetection() : m_found(false) {}
+	  HardwareDetection() : trackerLoad(new TrackerInstance()) {}
     OSVR_ReturnCode operator()(OSVR_PluginRegContext ctx) {
 
         std::cout << "PLUGIN: Got a hardware detection request" << std::endl;
 
-        iwr_status = IWRLoadDll();
+		//trackerLoad = new TrackerInstance();
+		long iwr_status = trackerLoad->status;
         
         if (iwr_status != IWR_OK){
             std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL" << std::endl;
             IWRFreeDll();
-            
+			return OSVR_RETURN_FAILURE;
         }
         
         iwr_status = IWROpenTracker();
 
         if (iwr_status == IWR_OK) {
             std::cout << "PLUGIN: We have detected Vuzix device! " << std::endl;
-            m_found = true;
 
             /// Create our device object
             osvr::pluginkit::registerObjectForDeletion(
@@ -134,15 +129,12 @@ class HardwareDetection {
         }
         else{
             std::cout << "PLUGIN: We have NOT detected Vuzix tracker " << std::endl;
+			return OSVR_RETURN_FAILURE;
         }
         return OSVR_RETURN_SUCCESS;
     }
-
-  private:
-
-    bool m_found;
-    long iwr_status;
-    
+private:
+	TrackerInstance* trackerLoad;
 };
 } // namespace
 

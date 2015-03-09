@@ -6,6 +6,8 @@ project(com_osvr_Vuzix)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # This looks for an osvrConfig.cmake file - most of the time it can be
 # autodetected but you might need to create/extend CMAKE_PREFIX_PATH to include something like
 # C:/Users/Ryan/Desktop/build/OSVR-Core-vc12 or
@@ -25,6 +27,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 # Build and install the plugin
 osvr_add_plugin(com_osvr_Vuzix
     com_osvr_Vuzix.cpp
+    TrackerInstance.h
     "${CMAKE_CURRENT_BINARY_DIR}/com_osvr_Vuzix_json.h")
 
 # Link against PluginKit (C++ wrapper) and the Vuzix iWear driver.
