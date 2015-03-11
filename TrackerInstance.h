@@ -14,13 +14,21 @@ Sensics, Inc.
 
 #define IWEAR_ONETIME_DEFINITIONS
 #include <iWearSDK.h>
-#include <iostream>
+
 
 class TrackerInstance {
 public:
   TrackerInstance() { status = IWRLoadDll(); }
 
   ~TrackerInstance() { IWRFreeDll(); }
+
+  void OpenTracker(){
+	  status = IWROpenTracker();
+  }
+
+  void GetTracking(long* yaw, long* pitch, long* roll){
+	  status = IWRGetTracking(yaw, pitch, roll);
+  }
 
   long status;
 };

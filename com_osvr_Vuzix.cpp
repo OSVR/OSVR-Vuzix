@@ -25,18 +25,23 @@
 
 // Library/third-party includes
 #include <math.h>
+#include <boost/shared_ptr.hpp>
 
 // Standard includes
 #include <iostream>
 
+typedef std::shared_ptr<TrackerInstance> trackerPtr;
+
 // Anonymous namespace to avoid symbol collision
 namespace {
-
+	
 class VuzixDevice {
 public:
-  VuzixDevice(OSVR_PluginRegContext ctx) {
+	VuzixDevice(OSVR_PluginRegContext ctx, trackerPtr trackerInst) {
     /// Create the initialization options
     OSVR_DeviceInitOptions opts = osvrDeviceCreateInitOptions(ctx);
+
+	tracker = trackerInst;
 
     osvrDeviceTrackerConfigure(opts, &m_tracker);
 
@@ -53,9 +58,9 @@ public:
   OSVR_ReturnCode update() {
 
     long yaw, pitch, roll;
-    long iwr_status = IWRGetTracking(&yaw, &pitch, &roll);
-
-    if (iwr_status != IWR_OK) {
+    tracker->GetTracking(&yaw, &pitch, &roll);
+	
+    if (tracker->status != IWR_OK) {
       std::cout << "PLUGIN: Vuzix tracker NOT connected, try again"
                 << std::endl;
       return OSVR_RETURN_FAILURE;
@@ -103,31 +108,27 @@ public:
 private:
   osvr::pluginkit::DeviceToken m_dev;
   OSVR_TrackerDeviceInterface m_tracker;
+  trackerPtr tracker;
 };
 
 class HardwareDetection {
 public:
-  HardwareDetection() : trackerLoad(new TrackerInstance()) {}
+	HardwareDetection() : tracker(new TrackerInstance()) {}
   OSVR_ReturnCode operator()(OSVR_PluginRegContext ctx) {
 
     std::cout << "PLUGIN: Got a hardware detection request" << std::endl;
-
-    // trackerLoad = new TrackerInstance();
-    long iwr_status = trackerLoad->status;
-
-    if (iwr_status != IWR_OK) {
+	
+    if (tracker->status != IWR_OK) {
       std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL" << std::endl;
-      IWRFreeDll();
       return OSVR_RETURN_FAILURE;
     }
+	tracker->OpenTracker();
 
-    iwr_status = IWROpenTracker();
-
-    if (iwr_status == IWR_OK) {
+	if (tracker->status == IWR_OK) {
       std::cout << "PLUGIN: We have detected Vuzix device! " << std::endl;
 
       /// Create our device object
-      osvr::pluginkit::registerObjectForDeletion(ctx, new VuzixDevice(ctx));
+      osvr::pluginkit::registerObjectForDeletion(ctx, new VuzixDevice(ctx, tracker));
     } else {
       std::cout << "PLUGIN: We have NOT detected Vuzix tracker " << std::endl;
       return OSVR_RETURN_FAILURE;
@@ -135,8 +136,8 @@ public:
     return OSVR_RETURN_SUCCESS;
   }
 
-private:
-  TrackerInstance *trackerLoad;
+  trackerPtr tracker;
+	
 };
 } // namespace
 
