@@ -21,6 +21,8 @@
 
 /// Needed in exactly one translation unit
 #define IWEAR_ONETIME_DEFINITIONS
+
+/// Needed to get M_PI from math.h on Windows.
 #define _USE_MATH_DEFINES
 
 // Internal Includes
