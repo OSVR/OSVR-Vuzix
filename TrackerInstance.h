@@ -35,6 +35,7 @@
 // Standard includes
 // - none
 
+namespace {
 class TrackerInstance {
   public:
     TrackerInstance() { status = IWRLoadDll(); }
@@ -49,5 +50,6 @@ class TrackerInstance {
 
     long status;
 };
+} // namespace
 
 #endif // INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
