@@ -1,8 +1,11 @@
-/** @date 2015
+/** @file
+    @brief Header
 
-@author
-Sensics, Inc.
-<http://sensics.com/osvr>
+    @date 2015
+
+    @author
+    Sensics, Inc.
+    <http://sensics.com/osvr>
 */
 
 // Copyright 2015 Vuzix Corporation.
@@ -19,9 +22,19 @@ Sensics, Inc.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
+#define INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
+
+
+// Internal Includes
+// - none
+
+// Library/third-party includes
 #define IWEAR_ONETIME_DEFINITIONS
 #include <iWearSDK.h>
 
+// Standard includes
+// - none
 
 class TrackerInstance {
 public:
@@ -39,3 +52,6 @@ public:
 
   long status;
 };
+
+#endif // INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
+
