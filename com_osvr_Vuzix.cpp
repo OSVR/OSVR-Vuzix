@@ -65,7 +65,7 @@ class VuzixDevice {
     OSVR_ReturnCode update() {
 
         long yaw, pitch, roll;
-        tracker->GetTracking(&yaw, &pitch, &roll);
+        tracker->GetTracking(yaw, pitch, roll);
 
         if (tracker->status != IWR_OK) {
             std::cout << "PLUGIN: Vuzix tracker NOT connected, try again"

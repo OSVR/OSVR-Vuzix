@@ -44,8 +44,8 @@ class TrackerInstance {
 
     void OpenTracker() { status = IWROpenTracker(); }
 
-    void GetTracking(long *yaw, long *pitch, long *roll) {
-        status = IWRGetTracking(yaw, pitch, roll);
+    void GetTracking(long &yaw, long &pitch, long &roll) {
+        status = IWRGetTracking(&yaw, &pitch, &roll);
     }
 
     long status;
