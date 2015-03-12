@@ -26,7 +26,7 @@
 // Internal Includes
 #include <osvr/PluginKit/PluginKit.h>
 #include <osvr/PluginKit/TrackerInterfaceC.h>
-#include <TrackerInstance.h>
+#include "TrackerInstance.h"
 
 // Generated JSON header file
 #include "com_osvr_Vuzix_json.h"
