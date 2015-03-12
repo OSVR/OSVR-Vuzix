@@ -29,7 +29,6 @@
 // - none
 
 // Library/third-party includes
-#define IWEAR_ONETIME_DEFINITIONS
 #include <iWearSDK.h>
 
 // Standard includes

@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//#define IWEAR_ONETIME_DEFINITIONS
+/// Needed in exactly one translation unit
+#define IWEAR_ONETIME_DEFINITIONS
 #define _USE_MATH_DEFINES
 
 // Internal Includes
