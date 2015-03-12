@@ -83,7 +83,7 @@ class VuzixDevice {
     static OSVR_OrientationState convYawPitchRollToQuat(long yaw, long pitch,
                                                         long roll) {
 
-        const float rawToRad = M_PI / 32768.0f;
+        const double rawToRad = M_PI / 32768.0f;
 
         // convert raw values to radians
         double yawRad = yaw * rawToRad;
