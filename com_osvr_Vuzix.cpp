@@ -32,19 +32,19 @@
 
 // Library/third-party includes
 #include <math.h>
-#include <boost/shared_ptr.hpp>
 
 // Standard includes
 #include <iostream>
-
-typedef std::shared_ptr<TrackerInstance> trackerPtr;
+#include <memory>
 
 // Anonymous namespace to avoid symbol collision
 namespace {
 
+typedef std::shared_ptr<TrackerInstance> TrackerPtr;
+
 class VuzixDevice {
   public:
-    VuzixDevice(OSVR_PluginRegContext ctx, trackerPtr trackerInst) {
+    VuzixDevice(OSVR_PluginRegContext ctx, TrackerPtr trackerInst) {
         /// Create the initialization options
         OSVR_DeviceInitOptions opts = osvrDeviceCreateInitOptions(ctx);
 
@@ -115,7 +115,7 @@ class VuzixDevice {
   private:
     osvr::pluginkit::DeviceToken m_dev;
     OSVR_TrackerDeviceInterface m_tracker;
-    trackerPtr tracker;
+    TrackerPtr tracker;
 };
 
 class HardwareDetection {
@@ -146,7 +146,7 @@ class HardwareDetection {
         return OSVR_RETURN_SUCCESS;
     }
 
-    trackerPtr tracker;
+    TrackerPtr tracker;
 };
 } // namespace
 
