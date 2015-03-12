@@ -40,6 +40,8 @@ class TrackerInstance {
   public:
     TrackerInstance() { status = IWRLoadDll(); }
 
+    /// @todo what happens if this is called when the DLL did not successfully
+    /// open?
     ~TrackerInstance() { IWRFreeDll(); }
 
     void OpenTracker() { status = IWROpenTracker(); }
@@ -47,6 +49,9 @@ class TrackerInstance {
     void GetTracking(long &yaw, long &pitch, long &roll) {
         status = IWRGetTracking(&yaw, &pitch, &roll);
     }
+
+    /// @todo DLL status accessor method (is DLL loaded?) and tracker status
+    /// accessor method (have we opened a tracker?)
 
     long status;
 };
