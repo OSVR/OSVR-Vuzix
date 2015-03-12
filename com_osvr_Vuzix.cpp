@@ -105,14 +105,15 @@ class VuzixDevice {
         double c1c2 = c1 * c2;
         double s1s2 = s1 * s2;
 
-        double w = c1c2 * c3 - s1s2 * s3;
-        double x = c1c2 * s3 + s1s2 * c3;
-        double y = s1 * c2 * c3 + c1 * s2 * s3;
-        double z = c1 * s2 * c3 - s1 * c2 * s3;
+        OSVR_OrientationState trackerState;
+        osvrQuatSetW(&trackerState, c1c2 * c3 - s1s2 * s3);
+        osvrQuatSetX(&trackerState,
+                     c1 * s2 * c3 - s1 * c2 * s3); // originally z
+        osvrQuatSetY(&trackerState,
+                     s1 * c2 * c3 + c1 * s2 * s3);          // originally y
+        osvrQuatSetZ(&trackerState, c1c2 * s3 + s1s2 * c3); // originally x
 
-        OSVR_OrientationState trackerCoords = {w, z, y, x};
-
-        return trackerCoords;
+        return trackerState;
     }
 
   private:
