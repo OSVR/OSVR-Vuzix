@@ -25,7 +25,6 @@
 #ifndef INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
 #define INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
 
-
 // Internal Includes
 // - none
 
@@ -37,21 +36,18 @@
 // - none
 
 class TrackerInstance {
-public:
-  TrackerInstance() { status = IWRLoadDll(); }
+  public:
+    TrackerInstance() { status = IWRLoadDll(); }
 
-  ~TrackerInstance() { IWRFreeDll(); }
+    ~TrackerInstance() { IWRFreeDll(); }
 
-  void OpenTracker(){
-	  status = IWROpenTracker();
-  }
+    void OpenTracker() { status = IWROpenTracker(); }
 
-  void GetTracking(long* yaw, long* pitch, long* roll){
-	  status = IWRGetTracking(yaw, pitch, roll);
-  }
+    void GetTracking(long *yaw, long *pitch, long *roll) {
+        status = IWRGetTracking(yaw, pitch, roll);
+    }
 
-  long status;
+    long status;
 };
 
 #endif // INCLUDED_TrackerInstance_h_GUID_9253C2FC_831E_4D97_45C7_A681F310C5D8
-
