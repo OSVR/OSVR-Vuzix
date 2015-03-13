@@ -34,3 +34,10 @@ osvr_add_plugin(com_osvr_Vuzix
 target_link_libraries(com_osvr_Vuzix
     osvr::osvrPluginKitCpp
     Vuzix::iWearDriver)
+
+# Install docs, license, sample config
+install(FILES
+    osvr_server_config.vuzix.sample.json
+    README.md
+    LICENSE
+    DESTINATION .)
