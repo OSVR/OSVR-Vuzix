@@ -75,16 +75,14 @@ class VuzixDevice {
                       << std::endl;
             return OSVR_RETURN_FAILURE;
         }
-
-        OSVR_OrientationState trackerCoords =
-            convYawPitchRollToQuat(yaw, pitch, roll);
+        OSVR_OrientationState trackerCoords = convEulerToQuat(yaw, pitch, roll);
 
         osvrDeviceTrackerSendOrientation(m_dev, m_tracker, &trackerCoords, 0);
         return OSVR_RETURN_SUCCESS;
     }
 
-    static OSVR_OrientationState convYawPitchRollToQuat(long yaw, long pitch,
-                                                        long roll) {
+    static OSVR_OrientationState convEulerToQuat(long yaw, long pitch,
+                                                 long roll) {
 
         const double rawToRad = M_PI / 32768.0f;
 
@@ -92,28 +90,36 @@ class VuzixDevice {
         double yawRad = yaw * rawToRad;
         double pitchRad = pitch * rawToRad;
         double rollRad = roll * rawToRad;
+        // invert roll to correct rolling direction
+        rollRad *= -1.0;
 
-        double c1 = cos(yawRad / 2.0);
-        double s1 = sin(yawRad / 2.0);
+        /* put angles into radians and divide by two, since all angles in
+        * formula
+        *  are (angle/2)
+        */
 
-        double c2 = cos(pitchRad / 2.0);
-        double s2 = sin(pitchRad / 2.0);
+        double half_yaw = yawRad / 2.0;
+        double half_pitch = pitchRad / 2.0;
+        double half_roll = rollRad / 2.0;
 
-        double c3 = cos(rollRad / 2.0);
-        double s3 = sin(rollRad / 2.0);
+        double cosYaw = cos(half_yaw);
+        double sinYaw = sin(half_yaw);
 
-        double c1c2 = c1 * c2;
-        double s1s2 = s1 * s2;
+        double cosPitch = cos(half_pitch);
+        double sinPitch = sin(half_pitch);
 
-        OSVR_OrientationState trackerState;
-        osvrQuatSetW(&trackerState, c1c2 * c3 - s1s2 * s3);
-        osvrQuatSetX(&trackerState,
-                     c1 * s2 * c3 - s1 * c2 * s3); // originally z
-        osvrQuatSetY(&trackerState,
-                     s1 * c2 * c3 + c1 * s2 * s3);          // originally y
-        osvrQuatSetZ(&trackerState, c1c2 * s3 + s1s2 * c3); // originally x
+        double cosRoll = cos(half_roll);
+        double sinRoll = sin(half_roll);
 
-        return trackerState;
+        double x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+        double y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+        double z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+
+        double w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
+
+        OSVR_OrientationState trackerCoords = {w, y, z, x};
+
+        return trackerCoords;
     }
 
   private:
@@ -138,7 +144,7 @@ class HardwareDetection {
 
         if (tracker->status == IWR_OK) {
             std::cout << "PLUGIN: We have detected Vuzix device! " << std::endl;
-
+            tracker->ZeroSet();
             /// Create our device object
             osvr::pluginkit::registerObjectForDeletion(
                 ctx, new VuzixDevice(ctx, tracker));
