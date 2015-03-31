@@ -70,7 +70,7 @@ class VuzixDevice {
         long yaw, pitch, roll;
         tracker->GetTracking(yaw, pitch, roll);
 
-        if (tracker->status != IWR_OK) {
+        if (tracker->GetStatus() != IWR_OK) {
             std::cout << "PLUGIN: Vuzix tracker NOT connected, try again"
                       << std::endl;
             return OSVR_RETURN_FAILURE;
@@ -135,14 +135,14 @@ class HardwareDetection {
 
         std::cout << "PLUGIN: Got a hardware detection request" << std::endl;
 
-        if (tracker->status != IWR_OK) {
+        if (tracker->GetDLLStatus() != IWR_OK) {
             std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL"
                       << std::endl;
             return OSVR_RETURN_FAILURE;
         }
         tracker->OpenTracker();
 
-        if (tracker->status == IWR_OK) {
+        if (tracker->GetStatus() == IWR_OK) {
             std::cout << "PLUGIN: We have detected Vuzix device! " << std::endl;
             tracker->ZeroSet();
             /// Create our device object

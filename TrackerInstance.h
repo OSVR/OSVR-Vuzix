@@ -37,11 +37,13 @@
 namespace {
 class TrackerInstance {
   public:
-    TrackerInstance() { status = IWRLoadDll(); }
+    TrackerInstance() { dllStatus = IWRLoadDll(); }
 
-    /// @todo what happens if this is called when the DLL did not successfully
-    /// open?
-    ~TrackerInstance() { IWRFreeDll(); }
+    ~TrackerInstance() {
+        // unload DLL only if it was loaded properly
+        if (dllStatus == IWR_OK)
+            IWRFreeDll();
+    }
 
     void OpenTracker() { status = IWROpenTracker(); }
 
@@ -51,9 +53,12 @@ class TrackerInstance {
         status = IWRGetTracking(&yaw, &pitch, &roll);
     }
 
-    /// @todo DLL status accessor method (is DLL loaded?) and tracker status
-    /// accessor method (have we opened a tracker?)
+    long GetDLLStatus() { return dllStatus; }
 
+    long GetStatus() { return status; }
+
+  private:
+    long dllStatus;
     long status;
 };
 } // namespace
