@@ -1,20 +1,23 @@
 {
-  "deviceVendor": "Vuzix",
-  "deviceName": "Wrap",
-  "author": "Georgiy Frolov gfrolov@sensics.com",
-  "version": 1,
-  "lastModified": "",
-  "interfaces": {
-    "tracker": {
-      "count": 1,
-      "bounded": false,
-      "position": false,
-      "orientation": true
+    "deviceVendor": "Vuzix",
+    "deviceName": "Wrap",
+    "author": "Georgiy Frolov gfrolov@sensics.com",
+    "version": 1,
+    "lastModified": "",
+    "interfaces": {
+        "tracker": {
+            "count": 1,
+            "bounded": true,
+            "position": false,
+            "orientation": true
+        }
+    },
+    "semantic": {
+        "head": {
+            "$target": "tracker/0"
+        }
+    },
+    "automaticAliases": {
+        "/me/head": "semantic/head"
     }
-  },
-  "semantics": {
-    "value": {
-      "$target": "tracker/0"
-    }
-  }
 }
