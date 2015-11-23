@@ -28,6 +28,12 @@
 // Internal Includes
 #include <osvr/PluginKit/PluginKit.h>
 #include <osvr/PluginKit/TrackerInterfaceC.h>
+#include <osvr/Kalman/OrientationState.h>
+#include <osvr/Kalman/AngularVelocityMeasurement.h>
+#include <osvr/Kalman/OrientationConstantVelocity.h>
+#include <osvr/Kalman/FlexibleKalmanFilter.h>
+#include <osvr/Util/EigenInterop.h>
+#include <osvr/Util/EigenCoreGeometry.h>
 #include "TrackerInstance.h"
 
 // Generated JSON header file
@@ -45,9 +51,23 @@ namespace {
 
 typedef std::shared_ptr<TrackerInstance> TrackerPtr;
 
+using ProcessModel = osvr::kalman::OrientationConstantVelocityProcessModel;
+using FilterState = ProcessModel::State;
+using AngularVelMeasurement =
+    osvr::kalman::AngularVelocityMeasurement<FilterState>;
+using osvr::kalman::types::Vector;
+using osvr::util::time::duration;
+
+namespace ei = osvr::util::eigen_interop;
 class VuzixDevice {
   public:
-    VuzixDevice(OSVR_PluginRegContext ctx, TrackerPtr trackerInst) {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    VuzixDevice(OSVR_PluginRegContext ctx, TrackerPtr trackerInst)
+        : m_imuMeas(Vector<3>::Zero(), Vector<3>::Constant(1.0E-8))
+
+    {
+        osvrTimeValueGetNow(&m_last);
         /// Create the initialization options
         OSVR_DeviceInitOptions opts = osvrDeviceCreateInitOptions(ctx);
 
@@ -60,25 +80,42 @@ class VuzixDevice {
 
         /// Send JSON descriptor
         m_dev.sendJsonDescriptor(com_osvr_Vuzix_json);
-
+        std::cout << "Quat: " << m_state.getQuaternion().coeffs().transpose()
+                  << std::endl;
         /// Register update callback
         m_dev.registerUpdateCallback(this);
     }
 
-    OSVR_ReturnCode update() {
+    OSVR_ReturnCode VuzixDevice::update() {
 
-        long yaw, pitch, roll;
-        tracker->GetTracking(yaw, pitch, roll);
-
-        if (tracker->GetStatus() != IWR_OK) {
-            std::cout << "PLUGIN: Vuzix tracker NOT connected, try again"
-                      << std::endl;
-            return OSVR_RETURN_FAILURE;
-        }
-        OSVR_OrientationState trackerCoords = convEulerToQuat(yaw, pitch, roll);
-
-        osvrDeviceTrackerSendOrientation(m_dev, m_tracker, &trackerCoords, 0);
+        iWearMagVector mag;
+        iWearAccelVector accel;
+        iWearGyroVector gyro;
+        OSVR_ReturnCode ret = tracker->GetRawTracking(&mag, &accel, &gyro);
+        Eigen::Vector3d angVel(gyro.x, gyro.y, gyro.z);
+        OSVR_TimeValue now;
+        osvrTimeValueGetNow(&now);
+        preReport(now);
+        m_imuMeas.setMeasurement(angVel);
+        osvr::kalman::correct(m_state, m_model, m_imuMeas);
+        // std::cout << "Quat: " << m_state.getQuaternion().coeffs().transpose()
+        // << std::endl;
+        // printf("[PLUGIN] x: %.2f; y: %.2f; z: %.2f; w: %.2f \n",
+        // trackerCoords.data[1], trackerCoords.data[2], trackerCoords.data[3],
+        // trackerCoords.data[0]);
+        // osvrDeviceTrackerSendOrientation(m_dev, m_tracker, &trackerCoords,
+        // 0);
         return OSVR_RETURN_SUCCESS;
+    }
+
+    bool VuzixDevice::preReport(const OSVR_TimeValue &timestamp) {
+        auto dt = duration(timestamp, m_last);
+        if (dt > 0) {
+            m_last = timestamp;
+            // only predict if time has moved forward
+            osvr::kalman::predict(m_state, m_model, dt);
+        }
+        return true;
     }
 
     static OSVR_OrientationState convEulerToQuat(long yaw, long pitch,
@@ -126,6 +163,10 @@ class VuzixDevice {
     osvr::pluginkit::DeviceToken m_dev;
     OSVR_TrackerDeviceInterface m_tracker;
     TrackerPtr tracker;
+    FilterState m_state;
+    ProcessModel m_model;
+    AngularVelMeasurement m_imuMeas;
+    OSVR_TimeValue m_last;
 };
 
 class HardwareDetection {
@@ -135,16 +176,10 @@ class HardwareDetection {
 
         std::cout << "PLUGIN: Got a hardware detection request" << std::endl;
 
-        if (tracker->GetDLLStatus() != IWR_OK) {
-            std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL"
-                      << std::endl;
-            return OSVR_RETURN_FAILURE;
-        }
-        tracker->OpenTracker();
+        OSVR_ReturnCode ret = tracker->OpenTracker();
 
-        if (tracker->GetStatus() == IWR_OK) {
+        if (ret == OSVR_RETURN_SUCCESS) {
             std::cout << "PLUGIN: We have detected Vuzix device! " << std::endl;
-            tracker->ZeroSet();
             /// Create our device object
             osvr::pluginkit::registerObjectForDeletion(
                 ctx, new VuzixDevice(ctx, tracker));

@@ -29,37 +29,54 @@
 // - none
 
 // Library/third-party includes
-#include <iWearSDK.h>
+#include <iWear.h>
 
 // Standard includes
-// - none
+#include <iostream>
 
 namespace {
 class TrackerInstance {
   public:
-    TrackerInstance() { dllStatus = IWRLoadDll(); }
+    TrackerInstance() { status = iWearConfigureDevice(&dev); }
 
-    ~TrackerInstance() {
-        // unload DLL only if it was loaded properly
-        if (dllStatus == IWR_OK)
-            IWRFreeDll();
+    ~TrackerInstance() {}
+
+    OSVR_ReturnCode OpenTracker() {
+        status = iWearOpenTracker(&dev);
+
+        if (status == IWR_OK) {
+            return OSVR_RETURN_SUCCESS;
+        } else {
+            return OSVR_RETURN_FAILURE;
+        }
     }
 
-    void OpenTracker() { status = IWROpenTracker(); }
-
-    void ZeroSet() { IWRZeroSet(); }
-
-    void GetTracking(long &yaw, long &pitch, long &roll) {
-        status = IWRGetTracking(&yaw, &pitch, &roll);
+    OSVR_ReturnCode GetTracking(OSVR_OrientationState *orient) {
+        iWearPositionVector pos;
+        status = iWearGetTracking(&dev, &pos);
+        if (status == IWR_OK) {
+            orient->data[0] = pos.w;
+            orient->data[1] = pos.x;
+            orient->data[2] = pos.y;
+            orient->data[3] = pos.z;
+            return OSVR_RETURN_SUCCESS;
+        }
+        return OSVR_RETURN_FAILURE;
     }
 
-    long GetDLLStatus() { return dllStatus; }
-
-    long GetStatus() { return status; }
+    OSVR_ReturnCode GetRawTracking(iWearMagVector *mag, iWearAccelVector *accel,
+                                   iWearGyroVector *gyro) {
+        iWearPositionVector pos;
+        status = iWearGetRawTracking(&dev, mag, accel, gyro);
+        if (status == IWR_OK) {
+            return OSVR_RETURN_SUCCESS;
+        }
+        return OSVR_RETURN_FAILURE;
+    }
 
   private:
-    long dllStatus;
-    long status;
+    iWearDevice dev;
+    iWearReturnCode status;
 };
 } // namespace
 
