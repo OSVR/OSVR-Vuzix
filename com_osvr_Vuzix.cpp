@@ -43,6 +43,11 @@
 // Anonymous namespace to avoid symbol collision
 namespace {
 
+template <typename T> inline void outputStatusCode(std::ostream &os, T status) {
+    os << "(status code: " << status << ", hex 0x" << std::hex << status
+       << std::dec << ")";
+}
+
 typedef std::shared_ptr<TrackerInstance> TrackerPtr;
 
 class VuzixDevice {
@@ -71,8 +76,9 @@ class VuzixDevice {
         tracker->GetTracking(yaw, pitch, roll);
 
         if (tracker->GetStatus() != IWR_OK) {
-            std::cout << "PLUGIN: Vuzix tracker NOT connected, try again"
-                      << std::endl;
+            std::cout << "PLUGIN: Vuzix tracker NOT connected, try again";
+            outputStatusCode(std::cout, tracker->GetStatus());
+            std::cout << std::endl;
             return OSVR_RETURN_FAILURE;
         }
         OSVR_OrientationState trackerCoords = convEulerToQuat(yaw, pitch, roll);
@@ -136,8 +142,9 @@ class HardwareDetection {
         std::cout << "PLUGIN: Got a hardware detection request" << std::endl;
 
         if (tracker->GetDLLStatus() != IWR_OK) {
-            std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL"
-                      << std::endl;
+            std::cout << "PLUGIN: Could NOT load Vuzix tracker DLL.";
+            outputStatusCode(std::cout, tracker->GetStatus());
+            std::cout << std::endl;
             return OSVR_RETURN_FAILURE;
         }
         tracker->OpenTracker();
@@ -149,8 +156,9 @@ class HardwareDetection {
             osvr::pluginkit::registerObjectForDeletion(
                 ctx, new VuzixDevice(ctx, tracker));
         } else {
-            std::cout << "PLUGIN: We have NOT detected Vuzix tracker "
-                      << std::endl;
+            std::cout << "PLUGIN: We have NOT detected Vuzix tracker.";
+            outputStatusCode(std::cout, tracker->GetStatus());
+            std::cout << std::endl;
             return OSVR_RETURN_FAILURE;
         }
         return OSVR_RETURN_SUCCESS;
