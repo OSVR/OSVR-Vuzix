@@ -1,16 +1,3 @@
 {
-  "plugins": [
-    "com_osvr_Vuzix"
-  ],
-  "routes": [
-    {
-      "destination": "/me/head",
-      "source": {
-        "child": {
-          "tracker": "/com_osvr_Vuzix/Vuzix",
-          "sensor": 0
-        }
-      }
-    }
-  ]
+  "display": "displays/HMD_Vuzix720.json"
 }
