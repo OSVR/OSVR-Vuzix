@@ -1,20 +1,21 @@
 {
   "deviceVendor": "Vuzix",
-  "deviceName": "Wrap",
+  "deviceName": "HMDs",
   "author": "Georgiy Frolov gfrolov@sensics.com",
-  "version": 1,
+  "version": 2,
   "lastModified": "",
   "interfaces": {
     "tracker": {
       "count": 1,
-      "bounded": false,
+      "bounded": true,
       "position": false,
       "orientation": true
     }
   },
-  "semantics": {
-    "value": {
-      "$target": "tracker/0"
-    }
+  "semantic": {
+    "hmd": "tracker/0"
+  },
+  "automaticAliases": {
+    "/me/head": "semantic/hmd"
   }
-}
+ }
