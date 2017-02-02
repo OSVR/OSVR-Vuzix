@@ -65,10 +65,10 @@ location.
 # http://www.boost.org/LICENSE_1_0.txt)
 
 set(Vuzix_ROOT_DIR
-	"${Vuzix_ROOT_DIR}"
-	CACHE
-	PATH
-	"Directory to search for Vuzix SDK")
+    "${Vuzix_ROOT_DIR}"
+    CACHE
+    PATH
+    "Directory to search for Vuzix SDK")
 
 if(WIN32)
     # Test 32/64 bits
@@ -80,12 +80,12 @@ if(WIN32)
 
     # Get desired program files directory
     set(_PF86_ENV "ProgramFiles(x86)")
-    set(_PF86 $ENV{${_PF86_ENV}})
-    if(NOT "$ENV{${_PF86}}" STREQUAL "")
-    # 32-bit dir: only set on win64
-        file(TO_CMAKE_PATH "$ENV{_PF86}" _progfiles)
+    set(_PF86 "$ENV{${_PF86_ENV}}")
+    if(NOT "${_PF86}" STREQUAL "")
+        # 32-bit dir: only set on win64
+        file(TO_CMAKE_PATH "${_PF86}" _progfiles)
     else()
-    # 32-bit dir on win32
+        # 32-bit dir on win32
         file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
     endif()
 
@@ -123,8 +123,6 @@ if(WIN32)
         "${_progfiles}/Vuzix Corporation/VuzixSDK/"
         PATH_SUFFIXES
         ${Vuzix_LIBRARY_PATH_SUFFIX})
-
-
 
     find_path(Vuzix_INCLUDE_DIR
         NAMES
